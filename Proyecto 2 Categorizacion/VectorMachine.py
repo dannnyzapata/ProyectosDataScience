@@ -48,7 +48,7 @@ X_train, X_test, y_train, y_test = train_test_split(X_Codificado, y, random_stat
 X_train_scaled = scale(X_train)
 X_test_scaled = scale(X_test)
 #Construyendo la maquina de vectores
-
+#Param Grid Search comentado para reducir el tiempo de ejecución
 '''
 param_grid = [
     { 'C': [0.5, 1, 10, 100],
@@ -81,6 +81,11 @@ plt.show()
 per_var = np.round (pca.explained_variance_ratio_*100, decimals = 1)
 labels = [str(x) for x in range(1, len(per_var)+1)]
 
+
+
+
+
+#Ordenamiento dibujado de como clasifico el programa
 plt.bar (x=range(1, len(per_var)+1), height=per_var)
 plt.tick_params(
     axis = 'x',
@@ -96,6 +101,26 @@ plt.show()
 train_pc1_coords = X_train_pca[:,0]
 train_pc2_coords = X_train_pca[:,1]
 pca_train_scaled = scale(np.column_stack((train_pc1_coords,train_pc2_coords)))
+#Entrenamiento y Grid search, comentado porque tarda mucho, es para descubrir los mejores parametros ahora que tenemos 2 columnas en vez de 24
+'''
+param_grid = [
+    {
+        'C': [1, 10, 100,1000],
+        'gamma':['scale', 1,0.1,0.01,0.001,0.0001],
+        'kernel': ['rbf'],
+    }
+]
+
+optimal_params = GridSearchCV(
+    SVC(),
+    param_grid,
+    cv=5,
+    scoring='accuracy',
+    verbose=0
+)
+optimal_params.fit(pca_train_scaled, y_train)
+print(optimal_params.best_params_)
+'''
 
 clf_svm = SVC (random_state=42, C=1000, gamma=0.001)
 clf_svm.fit(pca_train_scaled, y_train)
@@ -123,9 +148,9 @@ scatter = ax.scatter (test_pc1_coords, test_pc2_coords,c=y_train,
 legend = ax.legend(scatter.legend_elements()[0],
                    scatter.legend_elements()[1],
                    loc="upper right")
-legend.get_texts()[0].set_text("No default")
-legend.get_texts()[1].set_text("Yes default")
+legend.get_texts()[0].set_text("No es default")
+legend.get_texts()[1].set_text("Se fue a default")
 ax.set_ylabel('PC2')
 ax.set_xlabel('PC1')
-ax.set_title ('Decision surface using the PCA transformed/projected features')
+ax.set_title (' Area de desición usando las Features proyectadas/transformadas por PCA')
 plt.show()
