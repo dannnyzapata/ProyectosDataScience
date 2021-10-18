@@ -12,6 +12,7 @@ from sklearn.preprocessing import scale
 from sklearn.svm import SVC
 from sklearn.model_selection import GridSearchCV
 from sklearn.metrics import confusion_matrix
+from sklearn.model_selection import cross_val_score
 from sklearn.metrics import plot_confusion_matrix
 from sklearn.decomposition import PCA
 #Se lee el archivo .tsv que contiene los datos
@@ -47,6 +48,8 @@ X_Codificado = pd.get_dummies(X, columns=['SEX','EDUCATION','MARRIAGE','PAY_0','
 X_train, X_test, y_train, y_test = train_test_split(X_Codificado, y, random_state=42)
 X_train_scaled = scale(X_train)
 X_test_scaled = scale(X_test)
+
+
 #Construyendo la maquina de vectores
 #Param Grid Search comentado para reducir el tiempo de ejecución
 '''
@@ -68,7 +71,14 @@ print(optimal_params.best_params_)
 '''
 clf_svm = SVC (random_state=42, C = 100, gamma=0.001)
 clf_svm.fit(X_train_scaled, y_train)
+scores = cross_val_score(clf_svm, X_train, y_train, scoring="accuracy", cv=5)
+svc_scores = np.sqrt(scores)
 
+def display_scores(scores):
+    print("Scores:", scores)
+    print("Mean:", scores.mean())
+    print("Standard deviation:", scores.std())
+display_scores(svc_scores)
 plot_confusion_matrix (clf_svm,
                        X_test_scaled,
                        y_test,
@@ -80,10 +90,6 @@ X_train_pca = pca.fit_transform(X_train_scaled)
 plt.show()
 per_var = np.round (pca.explained_variance_ratio_*100, decimals = 1)
 labels = [str(x) for x in range(1, len(per_var)+1)]
-
-
-
-
 
 #Ordenamiento dibujado de como clasifico el programa
 plt.bar (x=range(1, len(per_var)+1), height=per_var)
@@ -122,8 +128,14 @@ optimal_params.fit(pca_train_scaled, y_train)
 print(optimal_params.best_params_)
 '''
 
+
+
+
 clf_svm = SVC (random_state=42, C=1000, gamma=0.001)
 clf_svm.fit(pca_train_scaled, y_train)
+scores = cross_val_score(clf_svm, X_train, y_train, scoring="accuracy", cv=5)
+svc_scores = np.sqrt(scores)
+
 X_test_pca = pca.transform(X_train_scaled)
 test_pc1_coords = X_test_pca[:,0]
 test_pc2_coords = X_test_pca[:,1]
